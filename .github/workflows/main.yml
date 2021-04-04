@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: macos-latest
 
     strategy:
       matrix:
@@ -25,6 +25,8 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm install --global windows-build-tools --vs2017
-      - run: npm install --global yarn
+#       - run: npm install --global windows-build-tools --vs2017
+#       - run: npm install --global yarn
+#       - run: yarn
+      - run: xcode-select --install
       - run: yarn
