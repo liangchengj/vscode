@@ -28,5 +28,5 @@ jobs:
 #       - run: npm install --global windows-build-tools --vs2017
 #       - run: npm install --global yarn
 #       - run: yarn
-      - run: xcode-select --install
+#       - run: xcode-select --install
       - run: yarn
