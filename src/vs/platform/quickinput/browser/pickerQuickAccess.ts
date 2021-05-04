@@ -5,7 +5,7 @@
 
 import { IQuickPick, IQuickPickItem } from 'vs/platform/quickinput/common/quickInput';
 import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
-import { IQuickPickSeparator, IKeyMods, IQuickPickAcceptEvent } from 'vs/base/parts/quickinput/common/quickInput';
+import { IQuickPickSeparator, IKeyMods, IQuickPickDidAcceptEvent } from 'vs/base/parts/quickinput/common/quickInput';
 import { IQuickAccessProvider } from 'vs/platform/quickinput/common/quickAccess';
 import { IDisposable, DisposableStore, Disposable, MutableDisposable } from 'vs/base/common/lifecycle';
 import { timeout } from 'vs/base/common/async';
@@ -42,7 +42,7 @@ export interface IPickerQuickAccessItem extends IQuickPickItem {
 	* @param keyMods the state of modifier keys when the item was accepted.
 	* @param event the underlying event that caused the accept to trigger.
 	*/
-	accept?(keyMods: IKeyMods, event: IQuickPickAcceptEvent): void;
+	accept?(keyMods: IKeyMods, event: IQuickPickDidAcceptEvent): void;
 
 	/**
 	 * A method that will be executed when a button of the pick item was
@@ -73,8 +73,8 @@ export interface IPickerQuickAccessProviderOptions<T extends IPickerQuickAccessI
 }
 
 export type Pick<T> = T | IQuickPickSeparator;
-export type PicksWithActive<T> = { items: ReadonlyArray<Pick<T>>, active?: T };
-export type Picks<T> = ReadonlyArray<Pick<T>> | PicksWithActive<T>;
+export type PicksWithActive<T> = { items: readonly Pick<T>[], active?: T };
+export type Picks<T> = readonly Pick<T>[] | PicksWithActive<T>;
 export type FastAndSlowPicks<T> = { picks: Picks<T>, additionalPicks: Promise<Picks<T>> };
 
 function isPicksWithActive<T>(obj: unknown): obj is PicksWithActive<T> {
@@ -125,7 +125,7 @@ export abstract class PickerQuickAccessProvider<T extends IPickerQuickAccessItem
 			const providedPicks = this.getPicks(picksFilter, picksDisposables, picksToken);
 
 			const applyPicks = (picks: Picks<T>, skipEmpty?: boolean): boolean => {
-				let items: ReadonlyArray<Pick<T>>;
+				let items: readonly Pick<T>[];
 				let activeItem: T | undefined = undefined;
 
 				if (isPicksWithActive(picks)) {
@@ -191,7 +191,7 @@ export abstract class PickerQuickAccessProvider<T extends IPickerQuickAccessItem
 								return;
 							}
 
-							let picks: ReadonlyArray<Pick<T>>;
+							let picks: readonly Pick<T>[];
 							let activePick: Pick<T> | undefined = undefined;
 							if (isPicksWithActive(providedPicks.picks)) {
 								picks = providedPicks.picks.items;
@@ -200,7 +200,7 @@ export abstract class PickerQuickAccessProvider<T extends IPickerQuickAccessItem
 								picks = providedPicks.picks;
 							}
 
-							let additionalPicks: ReadonlyArray<Pick<T>>;
+							let additionalPicks: readonly Pick<T>[];
 							let additionalActivePick: Pick<T> | undefined = undefined;
 							if (isPicksWithActive(awaitedAdditionalPicks)) {
 								additionalPicks = awaitedAdditionalPicks.items;
