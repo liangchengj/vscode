@@ -3701,7 +3701,7 @@ class EditorWrappingInfoComputer extends ComputedEditorOption<EditorOption.wrapp
  */
 export const EDITOR_FONT_DEFAULTS = {
 	fontFamily: (
-		'Menlo, Consolas, \'Dejavu Sans Mono\', \'Ubuntu Mono\', \'monospace\', monospace' /* platform.isMacintosh ? DEFAULT_MAC_FONT_FAMILY : (platform.isLinux ? DEFAULT_LINUX_FONT_FAMILY : DEFAULT_WINDOWS_FONT_FAMILY) */
+		'Menlo, Consolas, \'Dejavu Sans Mono\', \'Ubuntu Mono\', \'monospace\''
 	),
 	fontWeight: 'normal',
 	fontSize: (
