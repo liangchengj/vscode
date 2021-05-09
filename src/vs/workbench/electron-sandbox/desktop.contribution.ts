@@ -134,7 +134,7 @@ import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle
 			},
 			'window.zoomLevel': {
 				'type': 'number',
-				'default': 0,
+				'default': 1,
 				'description': localize('zoomLevel', "Adjust the zoom level of the window. The original size is 0 and each increment above (e.g. 1) or below (e.g. -1) represents zooming 20% larger or smaller. You can also enter decimals to adjust the zoom level with a finer granularity."),
 				ignoreSync: true
 			},
