@@ -97,6 +97,13 @@ export class LocalTerminalService extends Disposable implements ILocalTerminalSe
 			}));
 		}
 	}
+	async updateTitle(id: number, title: string): Promise<void> {
+		await this._localPtyService.updateTitle(id, title);
+	}
+
+	async updateIcon(id: number, icon: string): Promise<void> {
+		await this._localPtyService.updateIcon(id, icon);
+	}
 
 	async createProcess(shellLaunchConfig: IShellLaunchConfig, cwd: string, cols: number, rows: number, env: IProcessEnvironment, windowsEnableConpty: boolean, shouldPersist: boolean): Promise<ITerminalChildProcess> {
 		const executableEnv = await this._shellEnvironmentService.getShellEnv();
@@ -132,6 +139,10 @@ export class LocalTerminalService extends Disposable implements ILocalTerminalSe
 
 	async getEnvironment(): Promise<IProcessEnvironment> {
 		return this._localPtyService.getEnvironment();
+	}
+
+	async getShellEnvironment(): Promise<IProcessEnvironment> {
+		return this._shellEnvironmentService.getShellEnv();
 	}
 
 	async getWslPath(original: string): Promise<string> {

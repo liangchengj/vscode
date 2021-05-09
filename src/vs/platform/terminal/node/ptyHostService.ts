@@ -122,6 +122,7 @@ export class PtyHostService extends Disposable implements IPtyService {
 
 		// Setup logging
 		const logChannel = client.getChannel(TerminalIpcChannels.Log);
+		LogLevelChannelClient.setLevel(logChannel, this._logService.getLevel());
 		this._register(this._logService.onDidChangeLogLevel(() => {
 			LogLevelChannelClient.setLevel(logChannel, this._logService.getLevel());
 		}));
@@ -152,6 +153,12 @@ export class PtyHostService extends Disposable implements IPtyService {
 		clearTimeout(timeout);
 		lastPtyId = Math.max(lastPtyId, id);
 		return id;
+	}
+	updateTitle(id: number, title: string): Promise<void> {
+		return this._proxy.updateTitle(id, title);
+	}
+	updateIcon(id: number, icon: string): Promise<void> {
+		return this._proxy.updateIcon(id, icon);
 	}
 	attachToProcess(id: number): Promise<void> {
 		return this._proxy.attachToProcess(id);

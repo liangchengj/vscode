@@ -57,6 +57,7 @@ import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/
 import { isMacintosh, isWindows, OperatingSystem, OS } from 'vs/base/common/platform';
 import { URI } from 'vs/base/common/uri';
 import { Schemas } from 'vs/base/common/network';
+import { DataTransfers } from 'vs/base/browser/dnd';
 
 // How long in milliseconds should an average frame take to render for a notification to appear
 // which suggests the fallback DOM-based renderer
@@ -173,7 +174,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	get areLinksReady(): boolean { return this._areLinksReady; }
 	get initialDataEvents(): string[] | undefined { return this._initialDataEvents; }
 	get exitCode(): number | undefined { return this._exitCode; }
-	get title(): string { return this._title; }
+
 	get hadFocusOnExit(): boolean { return this._hadFocusOnExit; }
 	get isTitleSetByProcess(): boolean { return !!this._messageTitleDisposable; }
 	get shellLaunchConfig(): IShellLaunchConfig { return this._shellLaunchConfig; }
@@ -182,6 +183,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	get navigationMode(): INavigationMode | undefined { return this._navigationModeAddon; }
 	get isDisconnected(): boolean { return this._processManager.isDisconnected; }
 	get isRemote(): boolean { return this._processManager.remoteAuthority !== undefined; }
+	get title(): string { return this._getTitle(); }
 	get icon(): Codicon | undefined { return this._getIcon(); }
 
 	private readonly _onExit = new Emitter<number | undefined>();
@@ -196,6 +198,8 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	get onLinksReady(): Event<ITerminalInstance> { return this._onLinksReady.event; }
 	private readonly _onTitleChanged = new Emitter<ITerminalInstance>();
 	get onTitleChanged(): Event<ITerminalInstance> { return this._onTitleChanged.event; }
+	private readonly _onIconChanged = new Emitter<ITerminalInstance>();
+	get onIconChanged(): Event<ITerminalInstance> { return this._onIconChanged.event; }
 	private readonly _onData = new Emitter<string>();
 	get onData(): Event<string> { return this._onData.event; }
 	private readonly _onBinary = new Emitter<string>();
@@ -319,10 +323,21 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	private _getIcon(): Codicon | undefined {
 		if (this.shellLaunchConfig.icon) {
 			return iconRegistry.get(this.shellLaunchConfig.icon);
-		} else if (this.shellLaunchConfig?.attachPersistentProcess?.icon) {
+		}
+		if (this.shellLaunchConfig?.attachPersistentProcess?.icon) {
 			return iconRegistry.get(this.shellLaunchConfig.attachPersistentProcess.icon);
 		}
+		if (this._processManager.processState >= ProcessState.Launching) {
+			return Codicon.terminal;
+		}
 		return undefined;
+	}
+
+	private _getTitle(): string {
+		if (this.shellLaunchConfig.attachPersistentProcess?.title) {
+			return this.shellLaunchConfig.attachPersistentProcess.title;
+		}
+		return this._title;
 	}
 
 	addDisposable(disposable: IDisposable): void {
@@ -722,10 +737,40 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			}
 			this._onFocused.fire(this);
 		}));
+
 		this._register(dom.addDisposableListener(xterm.textarea, 'blur', () => {
 			this._terminalFocusContextKey.reset();
 			this._refreshSelectionContextKey();
 		}));
+
+		this._register(dom.addDisposableListener(xterm.element, dom.EventType.DROP, async (dragEvent: DragEvent) => {
+			if (!dragEvent.dataTransfer) {
+				return;
+			}
+
+			// Check if files were dragged from the tree explorer
+			let path: string | undefined;
+			const resources = dragEvent.dataTransfer.getData(DataTransfers.RESOURCES);
+			if (resources) {
+				path = URI.parse(JSON.parse(resources)[0]).fsPath;
+			} else if (dragEvent.dataTransfer.files?.[0].path /* Electron only */) {
+				// Check if the file was dragged from the filesystem
+				path = URI.file(dragEvent.dataTransfer.files[0].path).fsPath;
+			}
+
+			if (!path) {
+				return;
+			}
+
+			if (!this.shellLaunchConfig.executable) {
+				return;
+			}
+			const preparedPath = await this._terminalInstanceService.preparePathForTerminalAsync(path, this.shellLaunchConfig.executable, this.title, this.shellType, this.isRemote);
+
+			this.sendText(preparedPath, false);
+			this.focus();
+		}));
+
 		this._widgetManager.attachToElement(xterm.element);
 		this._processManager.onProcessReady(() => this._linkManager?.setWidgetManager(this._widgetManager));
 
@@ -1771,7 +1816,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		});
 		if (result) {
 			this.shellLaunchConfig.icon = result.description;
-			this._onTitleChanged.fire(this);
+			this._onIconChanged.fire(this);
 		}
 	}
 
