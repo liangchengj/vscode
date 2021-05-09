@@ -7,7 +7,7 @@ import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as 
 import { Registry } from 'vs/platform/registry/common/platform';
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 import { ILabelService, ResourceLabelFormatting } from 'vs/platform/label/common/label';
-import { OperatingSystem, isWeb } from 'vs/base/common/platform';
+import { OperatingSystem, isWeb, OS } from 'vs/base/common/platform';
 import { Schemas } from 'vs/base/common/network';
 import { IRemoteAgentService, RemoteExtensionLogFileName } from 'vs/workbench/services/remote/common/remoteAgentService';
 import { ILogService } from 'vs/platform/log/common/log';
@@ -30,18 +30,20 @@ export class LabelContribution implements IWorkbenchContribution {
 
 	private registerFormatters(): void {
 		this.remoteAgentService.getEnvironment().then(remoteEnvironment => {
+			const os = remoteEnvironment?.os || OS;
+			const formatting: ResourceLabelFormatting = {
+				label: '${path}',
+				separator: os === OperatingSystem.Windows ? '\\' : '/',
+				tildify: os !== OperatingSystem.Windows,
+				normalizeDriveLetter: os === OperatingSystem.Windows,
+				workspaceSuffix: isWeb ? undefined : Schemas.vscodeRemote
+			};
+			this.labelService.registerFormatter({
+				scheme: Schemas.vscodeRemote,
+				formatting
+			});
+
 			if (remoteEnvironment) {
-				const formatting: ResourceLabelFormatting = {
-					label: '${path}',
-					separator: remoteEnvironment.os === OperatingSystem.Windows ? '\\' : '/',
-					tildify: remoteEnvironment.os !== OperatingSystem.Windows,
-					normalizeDriveLetter: remoteEnvironment.os === OperatingSystem.Windows,
-					workspaceSuffix: isWeb ? undefined : Schemas.vscodeRemote
-				};
-				this.labelService.registerFormatter({
-					scheme: Schemas.vscodeRemote,
-					formatting
-				});
 				this.labelService.registerFormatter({
 					scheme: Schemas.userData,
 					formatting
@@ -136,11 +138,12 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 			},
 			'remote.autoForwardPortsSource': {
 				type: 'string',
-				markdownDescription: localize('remote.autoForwardPortsSource', "Sets the source from which ports are automatically forwarded when `remote.autoForwardPorts` is true. On Windows and Mac remotes, the `process` option has no effect and `output` will be used. Requires a reload to take effect."),
-				enum: ['process', 'output'],
+				markdownDescription: localize('remote.autoForwardPortsSource', "Sets the source from which ports information is found. On Windows and Mac remotes, the `process` options have no effect and `output` will be used. Requires a reload to take effect."),
+				enum: ['process', 'output', 'processAlways'],
 				enumDescriptions: [
-					localize('remote.autoForwardPortsSource.process', "Ports will be automatically forwarded when discovered by watching for processes that are started and include a port."),
-					localize('remote.autoForwardPortsSource.output', "Ports will be automatically forwarded when discovered by reading terminal and debug output. Not all processes that use ports will print to the integrated terminal or debug console, so some ports will be missed. Ports forwarded based on output will not be \"un-forwarded\" until reload or until the port is closed by the user in the Ports view.")
+					localize('remote.autoForwardPortsSource.process', "When `remote.autoForwardPorts` is `true`, port information will be discovered by watching for processes that are started and include a port."),
+					localize('remote.autoForwardPortsSource.output', "When `remote.autoForwardPorts` is `true`, port information will be discovered by reading terminal and debug output. Not all processes that use ports will print to the integrated terminal or debug console, so some ports will be missed. Ports forwarded based on output will not be \"un-forwarded\" until reload or until the port is closed by the user in the Ports view."),
+					localize('remote.autoForwardPortsSource.processAlways', "Port information will always be discovered by watching for processes that are started and include a port, regardless of any other setting value.")
 				],
 				default: 'process'
 			},

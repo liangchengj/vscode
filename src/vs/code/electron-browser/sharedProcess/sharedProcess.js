@@ -16,7 +16,15 @@
 	// Load shared process into window
 	bootstrapWindow.load(['vs/code/electron-browser/sharedProcess/sharedProcessMain'], function (sharedProcess, configuration) {
 		return sharedProcess.main(configuration);
-	});
+	},
+		{
+			configureDeveloperSettings: function () {
+				return {
+					disallowReloadKeybinding: true
+				};
+			}
+		}
+	);
 
 	/**
 	 * @returns {{ avoidMonkeyPatchFromAppInsights: () => void; }}
@@ -27,15 +35,18 @@
 	}
 
 	/**
+	 * @typedef {import('../../../base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration} ISandboxConfiguration
+	 *
 	 * @returns {{
 	 *   load: (
 	 *     modules: string[],
-	 *     resultCallback: (result, configuration: import('../../../base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration) => unknown,
+	 *     resultCallback: (result, configuration: ISandboxConfiguration) => unknown,
 	 *     options?: {
-	 *       configureDeveloperKeybindings?: (config: import('../../../base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration) => {forceEnableDeveloperKeybindings?: boolean, disallowReloadKeybinding?: boolean, removeDeveloperKeybindingsAfterLoad?: boolean},
-	 * 	     canModifyDOM?: (config: import('../../../base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration) => void,
-	 * 	     beforeLoaderConfig?: (loaderConfig: object) => void,
-	 *       beforeRequire?: () => void
+	 *       configureDeveloperSettings?: (config: ISandboxConfiguration) => {
+	 * 			forceEnableDeveloperKeybindings?: boolean,
+	 * 			disallowReloadKeybinding?: boolean,
+	 * 			removeDeveloperKeybindingsAfterLoad?: boolean
+	 * 		 }
 	 *     }
 	 *   ) => Promise<unknown>
 	 * }}

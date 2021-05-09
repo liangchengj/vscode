@@ -1,6 +1,6 @@
-# Code - OSS Development Container
+# Code OSS Development Container
 
-This repository includes configuration for a development container for working with Code - OSS in an isolated local container or using [GitHub Codespaces](https://github.com/features/codespaces).
+This repository includes configuration for a development container for working with Code OSS in an isolated local container or using [GitHub Codespaces](https://github.com/features/codespaces).
 
 > **Tip:** The default VNC password is `vscode`. The VNC server runs on port `5901` with a web client at `6080`. For better performance, we recommend using a [VNC Viewer](https://www.realvnc.com/en/connect/download/viewer/). Applications like the macOS Screen Sharing app will not perform as well.
 
@@ -16,7 +16,7 @@ This repository includes configuration for a development container for working w
 
     ![Image of Remote - Containers extension](https://microsoft.github.io/vscode-remote-release/images/remote-containers-extn.png)
 
-    > Note that the Remote - Containers extension requires the Visual Studio Code distribution of Code - OSS. See the [FAQ](https://aka.ms/vscode-remote/faq/license) for details.
+    > Note that the Remote - Containers extension requires the Visual Studio Code distribution of Code OSS. See the [FAQ](https://aka.ms/vscode-remote/faq/license) for details.
 
 4. Press <kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> and select **Remote-Containers: Clone Repository in Container Volume...**.
 
@@ -72,7 +72,7 @@ This container uses the [Fluxbox](http://fluxbox.org/) window manager to keep th
 
 Note you can also set the resolution from the command line by typing `set-resolution`.
 
-To start working with Code - OSS, follow these steps:
+To start working with Code OSS, follow these steps:
 
 1. In your local VS Code, open a terminal (<kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>\`</kbd>) and type the following commands:
 
@@ -85,16 +85,16 @@ To start working with Code - OSS, follow these steps:
 
 2. After the build is complete, open a web browser or a [VNC Viewer](https://www.realvnc.com/en/connect/download/viewer/) to the desktop environnement as described in the quick start and enter `vscode` as the password.
 
-3. You should now see Code - OSS!
+3. You should now see Code OSS!
 
 Next, let's try debugging.
 
-1. Shut down Code - OSS by clicking the box in the upper right corner of the Code - OSS window through your browser or VNC viewer.
+1. Shut down Code OSS by clicking the box in the upper right corner of the Code OSS window through your browser or VNC viewer.
 
 2. Go to your local VS Code client, and use Run / Debug view to launch the **VS Code** configuration. (Typically the default, so you can likely just press <kbd>F5</kbd>).
 
     > **Note:** If launching times out, you can increase the value of `timeout` in the "VS Code", "Attach Main Process", "Attach Extension Host", and "Attach to Shared Process" configurations in [launch.json](../.vscode/launch.json). However, running `scripts/code.sh` first will set up Electron which will usually solve timeout issues.
 
-3. After a bit, Code - OSS will appear with the debugger attached!
+3. After a bit, Code OSS will appear with the debugger attached!
 
 Enjoy!

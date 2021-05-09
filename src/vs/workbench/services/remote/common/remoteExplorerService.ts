@@ -30,6 +30,7 @@ export const TUNNEL_VIEW_CONTAINER_ID = '~remote.forwardedPortsContainer';
 export const PORT_AUTO_FORWARD_SETTING = 'remote.autoForwardPorts';
 export const PORT_AUTO_SOURCE_SETTING = 'remote.autoForwardPortsSource';
 export const PORT_AUTO_SOURCE_SETTING_PROCESS = 'process';
+export const PORT_AUTO_SOURCE_SETTING_PROCESS_ALWAYS = 'processAlways';
 export const PORT_AUTO_SOURCE_SETTING_OUTPUT = 'output';
 
 export enum TunnelType {
@@ -247,7 +248,12 @@ export class PortsAttributes extends Disposable {
 					const match = (<string>attributesKey).match(PortsAttributes.RANGE);
 					key = { start: Number(match![1]), end: Number(match![2]) };
 				} else {
-					const regTest: RegExp = RegExp(attributesKey);
+					let regTest: RegExp | undefined = undefined;
+					try {
+						regTest = RegExp(attributesKey);
+					} catch (e) {
+						// The user entered an invalid regular expression.
+					}
 					if (regTest) {
 						key = regTest;
 					}
@@ -774,6 +780,7 @@ class RemoteExplorerService implements IRemoteExplorerService {
 	}
 
 	setEditable(tunnelItem: ITunnelItem | undefined, editId: TunnelEditId, data: IEditableData | null): void {
+		console.log('setting edit ' + data);
 		if (!data) {
 			this._editable = undefined;
 		} else {

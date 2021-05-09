@@ -347,16 +347,7 @@ export function getClientArea(element: HTMLElement): Dimension {
 
 	// If visual view port exits and it's on mobile, it should be used instead of window innerWidth / innerHeight, or document.body.clientWidth / document.body.clientHeight
 	if (platform.isIOS && window.visualViewport) {
-		const width = window.visualViewport.width;
-		const height = window.visualViewport.height - (
-			browser.isStandalone
-				// in PWA mode, the visual viewport always includes the safe-area-inset-bottom (which is for the home indicator)
-				// even when you are using the onscreen monitor, the visual viewport will include the area between system statusbar and the onscreen keyboard
-				// plus the area between onscreen keyboard and the bottom bezel, which is 20px on iOS.
-				? (20 + 4) // + 4px for body margin
-				: 0
-		);
-		return new Dimension(width, height);
+		return new Dimension(window.visualViewport.width, window.visualViewport.height);
 	}
 
 	// Try innerWidth / innerHeight
@@ -1193,18 +1184,21 @@ export function computeScreenAwareSize(cssPx: number): number {
  * to change the location of the current page.
  * See https://mathiasbynens.github.io/rel-noopener/
  */
-export function windowOpenNoOpener(url: string): void {
+export function windowOpenNoOpener(url: string): boolean {
 	if (browser.isElectron || browser.isEdgeLegacyWebView) {
 		// In VSCode, window.open() always returns null...
 		// The same is true for a WebView (see https://github.com/microsoft/monaco-editor/issues/628)
 		// Also call directly window.open in sandboxed Electron (see https://github.com/microsoft/monaco-editor/issues/2220)
 		window.open(url);
+		return true;
 	} else {
 		let newTab = window.open();
 		if (newTab) {
 			(newTab as any).opener = null;
 			newTab.location.href = url;
+			return true;
 		}
+		return false;
 	}
 }
 
@@ -1409,37 +1403,8 @@ export function multibyteAwareBtoa(str: string): string {
  */
 export namespace WebFileSystemAccess {
 
-	// https://wicg.github.io/file-system-access/#dom-window-showdirectorypicker
-	export interface FileSystemAccess {
-		showDirectoryPicker: () => Promise<FileSystemDirectoryHandle>;
-	}
-
-	// https://wicg.github.io/file-system-access/#api-filesystemdirectoryhandle
-	export interface FileSystemDirectoryHandle {
-		readonly kind: 'directory',
-		readonly name: string,
-
-		getFileHandle: (name: string, options?: { create?: boolean }) => Promise<FileSystemFileHandle>;
-		getDirectoryHandle: (name: string, options?: { create?: boolean }) => Promise<FileSystemDirectoryHandle>;
-	}
-
-	// https://wicg.github.io/file-system-access/#api-filesystemfilehandle
-	export interface FileSystemFileHandle {
-		readonly kind: 'file',
-		readonly name: string,
-
-		createWritable: (options?: { keepExistingData?: boolean }) => Promise<FileSystemWritableFileStream>;
-	}
-
-	// https://wicg.github.io/file-system-access/#api-filesystemwritablefilestream
-	export interface FileSystemWritableFileStream {
-		write: (buffer: Uint8Array) => Promise<void>;
-		close: () => Promise<void>;
-	}
-
-	export function supported(obj: any & Window): obj is FileSystemAccess {
-		const candidate = obj as FileSystemAccess | undefined;
-		if (typeof candidate?.showDirectoryPicker === 'function') {
+	export function supported(obj: any & Window): boolean {
+		if (typeof obj?.showDirectoryPicker === 'function') {
 			return true;
 		}
 
@@ -1476,6 +1441,9 @@ export class ModifierKeyEmitter extends Emitter<IModifierKeyStatus> {
 		};
 
 		this._subscriptions.add(domEvent(window, 'keydown', true)(e => {
+			if (e.defaultPrevented) {
+				return;
+			}
 
 			const event = new StandardKeyboardEvent(e);
 			// If Alt-key keydown event is repeated, ignore it #112347
@@ -1510,6 +1478,10 @@ export class ModifierKeyEmitter extends Emitter<IModifierKeyStatus> {
 		}));
 
 		this._subscriptions.add(domEvent(window, 'keyup', true)(e => {
+			if (e.defaultPrevented) {
+				return;
+			}
+
 			if (!e.altKey && this._keyStatus.altKey) {
 				this._keyStatus.lastKeyReleased = 'alt';
 			} else if (!e.ctrlKey && this._keyStatus.ctrlKey) {
@@ -1589,7 +1561,7 @@ export class ModifierKeyEmitter extends Emitter<IModifierKeyStatus> {
 		return ModifierKeyEmitter.instance;
 	}
 
-	dispose() {
+	override dispose() {
 		super.dispose();
 		this._subscriptions.dispose();
 	}

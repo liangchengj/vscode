@@ -5,7 +5,7 @@
 
 import { URI, UriComponents } from 'vs/base/common/uri';
 import { IListService } from 'vs/platform/list/browser/listService';
-import { OpenEditor, SortOrder } from 'vs/workbench/contrib/files/common/files';
+import { OpenEditor, ISortOrderConfiguration } from 'vs/workbench/contrib/files/common/files';
 import { EditorResourceAccessor, SideBySideEditor, IEditorIdentifier, EditorInput, IEditorInputSerializer } from 'vs/workbench/common/editor';
 import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
@@ -36,7 +36,7 @@ export class FileEditorInputSerializer implements IEditorInputSerializer {
 	}
 
 	serialize(editorInput: EditorInput): string {
-		const fileEditorInput = <FileEditorInput>editorInput;
+		const fileEditorInput = editorInput as FileEditorInput;
 		const resource = fileEditorInput.resource;
 		const preferredResource = fileEditorInput.preferredResource;
 		const serializedFileEditorInput: ISerializedFileEditorInput = {
@@ -52,7 +52,7 @@ export class FileEditorInputSerializer implements IEditorInputSerializer {
 	}
 
 	deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): FileEditorInput {
-		return instantiationService.invokeFunction<FileEditorInput>(accessor => {
+		return instantiationService.invokeFunction(accessor => {
 			const serializedFileEditorInput: ISerializedFileEditorInput = JSON.parse(serializedEditorInput);
 			const resource = URI.revive(serializedFileEditorInput.resourceJSON);
 			const preferredResource = URI.revive(serializedFileEditorInput.preferredResourceJSON);
@@ -74,7 +74,7 @@ export class FileEditorInputSerializer implements IEditorInputSerializer {
 export interface IExplorerService {
 	readonly _serviceBrand: undefined;
 	readonly roots: ExplorerItem[];
-	readonly sortOrder: SortOrder;
+	readonly sortOrderConfiguration: ISortOrderConfiguration;
 
 	getContext(respectMultiSelection: boolean): ExplorerItem[];
 	hasViewFocus(): boolean;
