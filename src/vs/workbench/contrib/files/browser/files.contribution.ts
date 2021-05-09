@@ -175,7 +175,7 @@ configurationRegistry.registerConfiguration({
 		},
 		'files.autoGuessEncoding': {
 			'type': 'boolean',
-			'default': false,
+			'default': true,
 			'description': nls.localize('autoGuessEncoding', "When enabled, the editor will attempt to guess the character set encoding when opening files. This setting can also be configured per language."),
 			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 		},
@@ -191,7 +191,7 @@ configurationRegistry.registerConfiguration({
 				nls.localize('eol.CRLF', "CRLF"),
 				nls.localize('eol.auto', "Uses operating system specific end of line character.")
 			],
-			'default': 'auto',
+			'default': '\n',
 			'description': nls.localize('eol', "The default end of line character."),
 			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 		},
@@ -248,7 +248,7 @@ configurationRegistry.registerConfiguration({
 		},
 		'files.maxMemoryForLargeFilesMB': {
 			'type': 'number',
-			'default': 4096,
+			'default': 8192,
 			'markdownDescription': nls.localize('maxMemoryForLargeFilesMB', "Controls the memory available to VS Code after restart when trying to open large files. Same effect as specifying `--max-memory=NEWSIZE` on the command line."),
 			included: platform.isNative
 		},
@@ -274,7 +274,7 @@ configurationRegistry.registerConfiguration({
 		'files.simpleDialog.enable': {
 			'type': 'boolean',
 			'description': nls.localize('files.simpleDialog.enable', "Enables the simple file dialog. The simple file dialog replaces the system file dialog when enabled."),
-			'default': false
+			'default': true
 		}
 	}
 });
