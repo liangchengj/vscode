@@ -41,6 +41,7 @@ import { Schemas } from 'vs/base/common/network';
 import { STATUS_BAR_PROMINENT_ITEM_BACKGROUND, STATUS_BAR_PROMINENT_ITEM_FOREGROUND } from 'vs/workbench/common/theme';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 import { splitName } from 'vs/base/common/labels';
+import { IHostService } from 'vs/workbench/services/host/browser/host';
 
 const STARTUP_PROMPT_SHOWN_KEY = 'workspace.trust.startupPrompt.shown';
 
@@ -58,12 +59,23 @@ export class WorkspaceTrustRequestHandler extends Disposable implements IWorkben
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IHostService private readonly hostService: IHostService,
 	) {
 		super();
 
 		if (isWorkspaceTrustEnabled(configurationService)) {
 			this.registerListeners();
-			this.showModalOnStart();
+
+			if (this.hostService.hasFocus) {
+				this.showModalOnStart();
+			} else {
+				const focusDisposable = this.hostService.onDidChangeFocus(focused => {
+					if (focused) {
+						focusDisposable.dispose();
+						this.showModalOnStart();
+					}
+				});
+			}
 		}
 	}
 
@@ -111,7 +123,7 @@ export class WorkspaceTrustRequestHandler extends Disposable implements IWorkben
 				if (result.checkboxChecked) {
 					this.workspaceTrustManagementService.setParentFolderTrust(true);
 				} else {
-					this.workspaceTrustRequestService.completeRequest(true);
+					await this.workspaceTrustRequestService.completeRequest(true);
 				}
 				break;
 			case 1:
@@ -151,8 +163,8 @@ export class WorkspaceTrustRequestHandler extends Disposable implements IWorkben
 			{ label: localize('dontTrustOption', "No, I don't trust the authors"), sublabel: isSingleFolderWorkspace ? localize('dontTrustFolderOptionDescription', "Browse folder in restricted mode") : localize('dontTrustWorkspaceOptionDescription', "Browse workspace in restricted mode") },
 			[
 				!isSingleFolderWorkspace ?
-					localize('workspaceStartupTrustDetails', "{0} provides advanced editing features that may automatically execute files in this workspace.", product.nameShort) :
-					localize('folderStartupTrustDetails', "{0} provides advanced editing features that may automatically execute files in this folder.", product.nameShort),
+					localize('workspaceStartupTrustDetails', "{0} provides features that may automatically execute files in this workspace.", product.nameShort) :
+					localize('folderStartupTrustDetails', "{0} provides features that may automatically execute files in this folder.", product.nameShort),
 				localize('startupTrustRequestLearnMore', "If you don't trust the authors of these files, we recommend to continue in restricted mode as the files may be malicious. See [our docs](https://aka.ms/vscode-workspace-trust) to learn more.")
 			],
 			checkboxText
@@ -195,10 +207,10 @@ export class WorkspaceTrustRequestHandler extends Disposable implements IWorkben
 			// Dialog result
 			switch (buttons[result.choice].type) {
 				case 'ContinueWithTrust':
-					this.workspaceTrustRequestService.completeRequest(true);
+					await this.workspaceTrustRequestService.completeRequest(true);
 					break;
 				case 'ContinueWithoutTrust':
-					this.workspaceTrustRequestService.completeRequest(undefined);
+					await this.workspaceTrustRequestService.completeRequest(undefined);
 					break;
 				case 'Manage':
 					this.workspaceTrustRequestService.cancelRequest();
@@ -222,7 +234,7 @@ export class WorkspaceTrustRequestHandler extends Disposable implements IWorkben
 			return e.join(new Promise(async resolve => {
 				// Workspace is trusted and there are added/changed folders
 				if (trusted && (e.changes.added.length || e.changes.changed.length)) {
-					const addedFoldersTrustInfo = e.changes.added.map(folder => this.workspaceTrustManagementService.getFolderTrustInfo(folder.uri));
+					const addedFoldersTrustInfo = e.changes.added.map(folder => this.workspaceTrustManagementService.getUriTrustInfo(folder.uri));
 					if (!addedFoldersTrustInfo.map(i => i.trusted).every(trusted => trusted)) {
 						const result = await this.dialogService.show(
 							Severity.Info,
@@ -236,7 +248,7 @@ export class WorkspaceTrustRequestHandler extends Disposable implements IWorkben
 						);
 
 						// Mark added/changed folders as trusted
-						this.workspaceTrustManagementService.setFoldersTrust(addedFoldersTrustInfo.map(i => i.uri), result.choice === 0);
+						this.workspaceTrustManagementService.setUrisTrust(addedFoldersTrustInfo.map(i => i.uri), result.choice === 0);
 
 						resolve();
 					}
@@ -490,7 +502,7 @@ class WorkspaceTrustTelemetryContribution extends Disposable implements IWorkben
 			};
 
 			for (const folder of this.workspaceContextService.getWorkspace().folders) {
-				const { trusted, uri } = this.workspaceTrustManagementService.getFolderTrustInfo(folder.uri);
+				const { trusted, uri } = this.workspaceTrustManagementService.getUriTrustInfo(folder.uri);
 				if (!trusted) {
 					continue;
 				}
