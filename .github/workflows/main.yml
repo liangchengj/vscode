@@ -30,25 +30,27 @@ jobs:
 #         run: |
 #           yarn gulp vscode-darwin-x64-min
 #           tar -cvJf ../VSCode-darwin-x64.tar.xz ../VSCode-darwin-x64
+#           mv ../VSCode*.tar.xz .
 
 #       - name: Build for Linux
 #         if: startsWith(matrix.os, 'ubuntu')
 #         run: |
 #           yarn gulp vscode-linux-x64-min
 #           tar -cvJf ../VSCode-linux-x64.tar.xz ../VSCode-linux-x64
+#           mv ../VSCode*.tar.xz .
           
       - name: Build for Windows
         if: startsWith(matrix.os, 'windows')
         run: |
           yarn gulp vscode-win32-x64-min
           tar -cf - ..\VSCode-win32-x64 | xz --best > ..\VSCode-win32-x64.tar.xz
-          
+          move ..\VSCode*.tar.xz .
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}
-          path: ../VSCode*.tar.xz
+          path: VSCode*.tar.xz
           
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -56,6 +58,6 @@ jobs:
           name: feature_ftest
           tag_name: feature_ftest
           prerelease: true
-          files: "../VSCode*.tar.xz"
+          files: "VSCode*.tar.xz"
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
