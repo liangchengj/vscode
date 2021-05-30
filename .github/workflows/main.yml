@@ -44,7 +44,7 @@ jobs:
         run: |
           yarn gulp vscode-win32-x64-min
           move ..\VSCode-win32-x64 .
-          tar cf - VSCode-win32-x64 | xz --best > VSCode-win32-x64.tar.xz
+          tar cf - VSCode-win32-x64\* | xz --best > VSCode-win32-x64.tar.xz
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
