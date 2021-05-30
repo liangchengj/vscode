@@ -36,3 +36,9 @@ jobs:
         run: |
           yarn gulp vscode-linux-x64-min
           tar -cvJf ../VSCode-linux-x64.tar.xz ../VSCode-linux-x64
+          
+      - name: Build for Windows
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          yarn gulp vscode-win32-x64-min
+          tar -cf - ..\VSCode-win32-x64 | xz --best > ..\VSCode-win32-x64.tar.xz
