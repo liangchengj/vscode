@@ -42,3 +42,25 @@ jobs:
         run: |
           yarn gulp vscode-win32-x64-min
           tar -cf - ..\VSCode-win32-x64 | xz --best > ..\VSCode-win32-x64.tar.xz
+          
+          
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: feature_test
+          release_name: feature_test
+          body: Try to release asset
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-artifact@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: ../VSCode-win32-x64.tar.xz
+          asset_name: VSCode-win32-x64.tar.xz
+          asset_content_type: application/x-xz
