@@ -5,29 +5,28 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ feature ]
   pull_request:
-    branches: [ main ]
+    branches: [ feature ]
 
 jobs:
   build:
-
-    runs-on: macos-latest
-
     strategy:
       matrix:
-        node-version: [12.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
-      #       - run: npm install --global windows-build-tools --vs2017
-      #       - run: npm install --global yarn
-      #       - run: yarn
-      #       - run: xcode-select --install
+          node-version: 14.17.0
       - run: yarn
-      - run: yarn gulp --tasks
+
+      - name: Build for macOS
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        yarn gulp vscode-darwin-x64-min
+        tar -cvJf ../VSCode-darwin-x64.tar.xz ../VSCode-darwin-x64
