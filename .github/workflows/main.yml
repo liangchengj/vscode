@@ -33,6 +33,6 @@ jobs:
 
       - name: Build for Linux
         if: startsWith(matrix.os, 'ubuntu')
-          run: |
-            yarn gulp vscode-linux-x64-min
-            tar -cvJf ../VSCode-linux-x64.tar.xz ../VSCode-linux-x64
+        run: |
+          yarn gulp vscode-linux-x64-min
+          tar -cvJf ../VSCode-linux-x64.tar.xz ../VSCode-linux-x64
