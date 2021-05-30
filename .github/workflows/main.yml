@@ -26,7 +26,7 @@ jobs:
       - run: yarn
 
       - name: Build for macOS
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        yarn gulp vscode-darwin-x64-min
-        tar -cvJf ../VSCode-darwin-x64.tar.xz ../VSCode-darwin-x64
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          yarn gulp vscode-darwin-x64-min
+          tar -cvJf ../VSCode-darwin-x64.tar.xz ../VSCode-darwin-x64
