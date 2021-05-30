@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14.17.0
+      - run: yarn
 
 #       - name: Build for macOS
 #         if: startsWith(matrix.os, 'macos')
