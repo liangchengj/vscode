@@ -141,7 +141,7 @@ import { InstallShellScriptAction, UninstallShellScriptAction } from 'vs/workben
 			},
 			'window.zoomLevel': {
 				'type': 'number',
-				'default': 1,
+				'default': isMacintosh ? 1 : 0.2,
 				'description': localize('zoomLevel', "Adjust the zoom level of the window. The original size is 0 and each increment above (e.g. 1) or below (e.g. -1) represents zooming 20% larger or smaller. You can also enter decimals to adjust the zoom level with a finer granularity."),
 				ignoreSync: true
 			},
