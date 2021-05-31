@@ -43,14 +43,8 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         run: |
           yarn gulp vscode-win32-x64-min
-          move ..\VSCode-win32-x64 .
-          tar zcvf VSCode-win32-x64.tar.gz VSCode-win32-x64
-          
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.os }}
-          path: VSCode*.tar.xz
+          move ..\VSCode* .
+          tar -cvf VSCode-win32-x64.tar VSCode-win32-x64 && xz -zv9f VSCode-win32-x64.tar
           
       - name: Release
         uses: softprops/action-gh-release@v1
