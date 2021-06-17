@@ -46,12 +46,6 @@ jobs:
           move ..\VSCode* .
           tar -cvf VSCode-win32-x64.tar VSCode-win32-x64 && xz -zv9f VSCode-win32-x64.tar
           
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.os }}
-          path: VSCode*.tar.*
-          
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
