@@ -13,7 +13,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        # macos-latest, ubuntu-latest,
+        os: [ windows-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -43,8 +44,10 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         run: |
           yarn gulp vscode-win32-x64-min
-          move ..\VSCode* .
-          tar -cvf VSCode-win32-x64.tar VSCode-win32-x64 && xz -zv9f VSCode-win32-x64.tar
+          cmd.exe /c '"C:\Program Files\Git\usr\bin\realpath.exe" . > "%USERPROFILE%\p_path"'
+          cmd.exe /c '"C:\Program Files\Git\bin\bash.exe" --login -i -c "mv /c/Users/$(whoami)/p_path ~/"'
+          cmd.exe /c '"C:\Program Files\Git\bin\bash.exe" --login -i -c "cd $(cat ~/p_path) && tar -cvJf ../VSCode-win32-x64.tar.xz ../VSCode-win32-x64"'
+          cmd.exe /c '"C:\Program Files\Git\bin\bash.exe" --login -i -c "cd $(cat ~/p_path) && mv ../VSCode*.tar.xz ."'
           
       - name: Release
         uses: softprops/action-gh-release@v1
